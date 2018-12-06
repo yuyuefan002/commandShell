@@ -1,0 +1,625 @@
+(1) Run ./myShell
+     myShell:/home/yy225/ece551/mp_miniproject $exit
+or   myShell:/home/yy225/ece551/mp_miniproject $EOF(CTRL+D)
+
+     You will see program quit
+     which is correct, At first, it print the prompt whenever the shell wants the input. Second, both this two command require shell to quit, which exactly cause the program to exit.
+
+(2) Run ./myShell
+    myShell:/home/yy225/ece551/mp_miniproject $./testcases/argvTest 1\ 2 3\ \ 4 5\\ 6
+    You will see that it prints
+    ./testcases/argvTest
+    1 2
+    3  4
+    5\
+    6
+    Program exited with status 0
+    which is correct because 1. the input is a command name with the specific path, since it can execute the program and exit it correctly with status 0 which means EXIT_SUCCESS,therefore, the shell can execute the command correctly. 2. the executed program prints the argvs, therefore, the shell can at first correctly detect arguments which is saperated by ' '; second, it can omit multiple spaces; third, it can treat "\ " as ' ', which let the space successfully stay in the arguments; forth, it can treat anything after any first '\' as a legal input, which is aligned with the behavior of bash.
+
+(2.1) A more detailed arguments test
+    Run ./myShell
+    myShell:/home/yy225/ece551/mp_miniproject $./testcases/argvTest 1\2 1\ 2 1\ \ 2 1\\ 2 1 \ 2 1\  2        3           4 
+    You will see it prints
+
+    ./testcases/argvTest
+    12
+    1 2
+    1  2
+    1\
+    2
+    1
+     2
+    1
+    2
+    3
+    4
+    Program exited with status 0
+
+    which is correct because arguments follow two rules, each argument is saperated by the space no matter how many spaces between two arguments; everything after the first '\' will be reserved.
+
+    myShell:/home/yy225/ece551/mp_miniproject $ls aa
+
+    You will see it prints
+
+    /bin/ls: cannot access 'aa': No such file or directory
+    Program exited with status 2
+
+    which is correct because the argument of ls can only be file or directory, and it exit with the correct status 2, which means serious trouble, like cannot access commandline arguments.
+
+(2.2) search envionment variable test
+    Run ./myShell
+    myShell:/home/yy225/ece551/mp_miniproject $ls /var
+    	   
+     You will see that it prints
+    
+    backups  cache  data  dedup  git  lib  local  lock  log  mail  nobody  opt  post.sh  run  spool  tmp
+    Program exited with status 0
+
+    which is correct because
+    the first line input is "ls /var", which is a command name that does not have a forward slash in it. Therefore, the shell check whether it is in the ECE551PATH at first, if it exists, then, the shell will use the full path of this command to execute it, which is aligned with bash. And it correctly print the files in the /var.
+
+    myShell:/home/yy225/ece551/mp_miniproject $xxx
+    You will see it prints
+    
+    Command xxx not found
+
+    which is correct because
+    the second line input is "xxx", which don't have '/' in it either. Since it does not exist in the ECE551PATH thus, the cannot find it,then it will print "Command xxx not found". I think most of the invalid input will be happened in this situation if a novice user inputs some wrong command.
+
+    myShell:/home/yy225/ece551/mp_miniproject $./ls
+    
+    You will see it prints
+    Command ./ls not found
+
+    which is correct because
+    the third line input is "./ls", which is a program in ECE551PATH, but with a '/' in it, so the shell will only check the given path but not the ECE551PATH, therefore, the command cannot be found, which is indicated by "Command ./ls not found".
+    
+    myShell:/home/yy225/ece551/mp_miniproject $(press ENTER)
+
+    You will see nothing will happen
+    And it will print
+    
+    myShell:/home/yy225/ece551/mp_miniproject $
+
+    again
+
+    which is correct beacuse user don't input anything, therefore shell doesn't need to do anything.
+
+
+(3) Run ./myShell
+    At first, you can see now promt show the current directory
+
+    1.
+    myShell:/home/yy225/ece551/mp_miniproject $cd ..
+
+    You will see it prints
+    myShell:/home/yy225/ece551 $
+
+    which is correct because 1. the program is originally in /home/yy225/ece551/mp_miniproject,  therefore, after running "cd ..", it changes its current directory to the upper level 2. the shell correctly print the current directory before the $.
+
+    2.
+    myShell:/home/yy225/ece551/mp_miniproject $cd ~
+
+    You will see it prints
+
+    myShell:/home/yy225 $
+
+    which is correct because '~' indicates the home path, therefore this command will go to the home directory.
+
+    3.
+    myShell:/home/yy225/ece551 $cd ~/ece551/mp_miniproject
+    myShell:/home/yy225/ece551/mp_miniproject $var1=./testcases/argvTest var2=1\ 2
+    myShell:/home/yy225/ece551/mp_miniproject $echo $var1-$var2-
+
+    You will see it prints
+    ./testcases/argvTest-1 2-
+    Program exited with status 0
+
+    which is correct because 1. the input command is "cd mp_miniprojet","var1=./testcases/argvTest var2=1\ 2", "echo $var1-$var2-" in sequence. The shell provide access to variables.After the second command, now var1=./testcases/argvTest var2=1 2, anything after '\' will be reserved. The last command print anything after echo, the shell will use ./testcases/argvTest to substitude var1, 1 2 to substitude var2, and only number, alpha and '_' is legal in var name, anything other than this three will be treated as a split, therefore, the output is ./testcases/argvTest-1 2-.
+
+    4.
+    myShell:/home/yy225/ece551/mp_miniproject $$var1 $var2
+
+    You will see it prints
+    ./testcases/argvTest
+    1
+    2
+    Program exited with status 0
+
+    which is correct because the command is "$var1 $var2", the shell will replace it with the current value of that variable and running the right command.
+
+    5.
+    myShell:/home/yy225/ece551/mp_miniproject $var-=1
+    myShell:/home/yy225/ece551/mp_miniproject $var@=1
+    myShell:/home/yy225/ece551/mp_miniproject $var =1
+    myShell:/home/yy225/ece551/mp_miniproject $var= 1
+
+    you will see it prints
+    Command var-=1 not found
+    Command var@=1 not found
+    Command var not found
+    Command 1 not found
+
+    which is correct because 1. the var name include invalid character like '-' and '@' (all the characters invalid except num,alpha and '_'), therefore, the shell will not treat them as var but a command. 2 "var =1","var= 1" also cannot be treated as a variable assignment command, since they contain ' ' inside the command, which will let shell confuse. The current behavior is aligned with bash.
+
+(3.1) extra variable test
+    Run ./myShell
+
+    1. 
+    myShell:/home/yy225/ece551/mp_miniproject $var=1\ 2
+    myShell:/home/yy225/ece551/mp_miniproject $echo -123$var!$var;'
+
+    You will see it prints
+
+    -1231 2!1 2;'
+    Program exited with status 0
+
+    which is correct because the shell only treat the consecutive valid characters as the var name, therefore, in the string shell only treat var as a valid varname, and substitude it by the correct value.
+
+    2.
+    myShell:/home/yy225/ece551/mp_miniproject $echo $$var$$
+    You will see it prints
+
+    1 2$
+    Program exited with status 0
+
+    which is correct because if there is no character after $, shell cannot will treat it as a var with no value, which is slightly different from bash, since I don't define '$', '-' as a varname. Besides, the last $ is the independent character, it definitely not indicating a start of var, so I print it out.
+
+    3.
+    myShell:/home/yy225/ece551/mp_miniproject $echo \$var
+    You will see it prints
+
+    $var
+    Program exited with status 0
+
+    which is correct because there is a '\' before '$', therefor, '$' should be treated as not a leading character of a variable but an ordinary character and print it out.
+
+    4.
+    myShell:/home/yy225/ece551/mp_miniproject $echo \$$var\$\$
+    You will see it prints
+
+    $1 2$$
+    Program exited with status 0
+
+    which is correct because there is escape character in front of '$', therefore, we reserve '$' which is right after '\'.
+
+(3.2) ordinary set export inc test
+    Run ./myShell
+    myShell:/home/yy225/ece551/mp_miniproject $set var !@#$%^ &*()-=ad1 \
+    myShell:/home/yy225/ece551/mp_miniproject $echo $var
+    myShell:/home/yy225/ece551/mp_miniproject $env | grep var
+
+    You will see it prints
+
+    !@#%^ &*()-=ad1 \
+    Program exited with status 0
+    MAIL=/var/mail/yy225
+    Program exited with status 0
+
+    which is correct because 1. the command is "set var !@#%^ &*()-=ad1 \ " and "echo $var" in sequence. The shell correctly treat anything except set and var as the value of var, (note:no character will be treated as invalid except '|', which is aligned with bash 2. by inputting "env", the shell will not place it in the environment for other programs since user didn't export the var, so we cannot find it in "env".
+
+      At second,
+      myShell:/home/yy225/ece551/mp_miniproject $export var
+      myShell:/home/yy225/ece551/mp_miniproject $env|grep var
+	     
+      you will see it prints
+    MAIL=/var/mail/yy225
+    var=!@#%^ &*()-=ad1 \
+    Program exited with status 0
+      
+    which is correct because 1. the command is "export var" and "env" in sequence. The shell put the current value of var into the environment for other programs, which can be observed by "env". Now var is one of the environment variables.
+
+    At third,
+    myShell:/home/yy225/ece551/mp_miniproject $inc var
+    myShell:/home/yy225/ece551/mp_miniproject $echo $var	
+    myShell:/home/yy225/ece551/mp_miniproject $var=2147483646
+    myShell:/home/yy225/ece551/mp_miniproject $inc var
+    myShell:/home/yy225/ece551/mp_miniproject $echo $var
+    myShell:/home/yy225/ece551/mp_miniproject $inc var
+    myShell:/home/yy225/ece551/mp_miniproject $echo $var
+    
+    you will see it print
+    1
+    2147483647
+    2147483647
+
+    which is correct because the command is "inc var","echo $var","var=2147483646","inc var", "echo $var", "inc var" and "echo $var" in sequence. Since var is now equal "var=!@#%^ &*()-=ad1 \ ", so the shell will initial value as 0 and then increment it to 1. Then set var as 2147483646, and inc it, then it becomes 2147483647, which is INT_MAX, which is also the correct behavior. At last, inc var again, since now var is already INT_MAX, keeping increasing it will cause unexpected behavior, therefore, I limit the max number it could becime is INT_MAX. If it is already INT_MAX, it will not increase.
+
+(3.3)extra set test
+    Run ./myShell
+
+    1.
+    myShell:/home/yy225/ece551/mp_miniproject $set !a3 123$var
+    You will see it prints
+
+    !a3:var name should only include number, alpha and _
+    set fail
+
+    which is correct because the var name should only include number, alpha and _ and the given varname doesn't meet the requirement, therefore, it failed.	
+
+    2.
+    myShell:/home/yy225/ece551/mp_miniproject $set aaa asdasda sdas\ asdasd
+    myShell:/home/yy225/ece551/mp_miniproject $echo $aaa
+    You will see it prints
+    
+    asdasda sdas asdasd
+    Program exited with status 0
+
+    which is correct because the rest of line is the value of var,and in the var '\' is also an escape character. "\ " means ' '.
+
+    3.
+    myShell:/home/yy225/ece551/mp_miniproject $a=123
+    myShell:/home/yy225/ece551/mp_miniproject $set $a 456
+    myShell:/home/yy225/ece551/mp_miniproject $echo $123
+    You will see it prints
+
+    456
+    Program exited with status 0
+
+    which is correct because a is a varname and its value is 123,therefore, $a is substitute by 123, then set will treat 123 as a varname and give the value 456 to var 123.
+
+(3.4)extra export test
+    Run ./myShell
+    1.
+    myShell:/home/yy225/ece551/mp_miniproject $export a3
+    You will see it prints
+
+    a3:no such variable
+    export fail
+
+    which is correct since user doesn't set a3 as a variable, so it must be failed.
+
+    2.
+    myShell:/home/yy225/ece551/mp_miniproject $export ad@
+    You will see it prints
+    
+    ad@:var name should only include number, alpha and _
+    export fail
+
+    which is correct since the given varname is not valid, so it should be failed.
+
+    3.
+    myShell:/home/yy225/ece551/mp_miniproject $export
+
+    nothing will happen
+
+    which is correct because user doesn't specify what to export, so shell do nothing.
+
+    4.
+    myShell:/home/yy225/ece551/mp_miniproject $export a$
+    You will see it prints
+
+    a$:var name should only include number, alpha and _
+    export fail
+
+    which is correct because this is not a valid var name, although we also haven't store this var, valid var name has a higher priority than existing var.
+    5.
+     Run ./myShell
+     myShell:/home/yy225/ece551/mp_miniproject $set a 1
+     myShell:/home/yy225/ece551/mp_miniproject $export a
+     myShell:/home/yy225/ece551/mp_miniproject $./myShell
+     myShell:/home/yy225/ece551/mp_miniproject $ls
+     myShell:/home/yy225/ece551/mp_miniproject $env
+     myShell:/home/yy225/ece551/mp_miniproject $exit
+
+     You will see it prints
+     command.cpp  command.o         interface.cpp  interface.o  myShell      myShell.o     parser.cpp  parser.o  testcases
+     command.h    commandShell.txt  interface.h    Makefile     myShell.cpp  numerics.txt  parser.h    README    TESTING.txt
+     Program exited with status 0
+     LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+     SSH_CONNECTION=10.197.42.179 60618 152.3.77.223 22
+     LESSCLOSE=/usr/bin/lesspipe %s %s
+     LANG=en_US.UTF-8
+     S_COLORS=auto
+     XDG_SESSION_ID=76315
+     USER=yy225
+     PWD=/home/yy225/ece551/mp_miniproject
+     HOME=/home/yy225
+     SSH_CLIENT=10.197.42.179 60618 22
+     SSH_TTY=/dev/pts/97
+     MAIL=/var/mail/yy225
+     TERM=xterm
+     SHELL=/bin/bash
+     SHLVL=1	
+     LOGNAME=yy225
+     XDG_RUNTIME_DIR=/run/user/1356
+     PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+     LESSOPEN=| /usr/bin/lesspipe %s
+     OLDPWD=/home/yy225
+     _=./myShell
+     a=1
+     Program exited with status 0
+     Program exited with status 0
+
+     which is correct because the shell can recursively call itself, and with the every setting is correct. Like it can call ls correctly. It can obtain the environment variables set by the upper level cache, which is indicated by "a=1". After exit, it returns to the upper level shell.
+
+
+
+(3.5)extra inc test
+    Run ./myShell
+
+    1.
+    myShell:/home/yy225/ece551/mp_miniproject $inc
+
+    nothing will happen
+
+    which is correct because user doesn't specify what to inc, so shell do nothing.
+
+    2.
+    myShell:/home/yy225/ece551/mp_miniproject $inc a$
+    You will see it prints
+        
+    a$:var name should only include number, alpha and _
+    inc fail
+    which is correct because the given varname is not valid. The varname should be valid at first
+
+    3.
+    myShell:/home/yy225/ece551/mp_miniproject $inc a1
+    myShell:/home/yy225/ece551/mp_miniproject $echo a1
+    You will see it prints
+
+    1
+    Program exited with status 0
+
+    which is correct, since if var is not currently set, then the initial value is treated as 0, then incremented to 1.
+
+(3.6) extra var test
+    Run ./myShell
+    myShell:/home/yy225/ece551/mp_miniproject $echo $PATH
+
+    You will see it prints
+
+    /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+    Program exited with status 0
+
+    which is correct since it aligns with the bash's behavior. The shell now can print the environment variables which is in the environment. If you change it later, before export it, it will not be reflected in the "env" command's output. Now can use any variable which is environment variable.
+
+ 
+
+(4) Run ./myShell
+    1.
+    myShell:/home/yy225/ece551/mp_miniproject $./testcases/errMsg>cout
+    You will see it prints
+    
+    error message
+    Program exited with status 0
+
+    which is correct because
+    the first command is "./testcases/errMsg>cout",which tests redirecting standard output for the command. This program only output one stdout message and one stderr message. Therefore, after redirecting standard input, it will only print error message on the screen, and you can check file "cout" with a stdcout message inside.
+
+    2.
+    myShell:/home/yy225/ece551/mp_miniproject $./testcases/errMsg 2>err
+    You will see it prints
+
+    cout message
+    Program exited with status 0
+
+    which is correct because
+    the second command is "./testcases/errMsg 2>err", which tests redirecting standard error for the command.It will only output stdout message and you can find stderr message inside the file "err". There must be a space in front of "2>", other wise will cause confusing. MyShell doesn't support "./testcases/errMsg 2>err" if you want to redirect stderr.
+
+    3.
+    myShell:/home/yy225/ece551/mp_miniproject $./testcases/rdiIntest<cout
+    You will see it prints
+    
+    cout message
+    Program exited with status 0
+
+    which is correct because
+    the third command is "./testcases/rdiIntest<cout", whcih tests redirecting standart input for the command. The command ./testcases/rdiIntest only prints anything from stdin, therefore it will print anything it get from "cout".
+    Note that the redirection does not have any specific format, you can add whatever number of space you want around the redirection sign.
+
+(4.1) pipe comprehensive test
+    Run ./myShell
+
+    1.
+    myShell:/home/yy225/ece551/mp_miniproject $./testcases/rdiIntest < testcases/65536 |./testcases/rdiIntest|./testcases/rdiIntest>65536_copy
+    You will see it prints
+
+    Program exited with status 0
+    Program exited with status 0
+    Program exited with status 0
+
+    which is correct because the command is "./testcases/rdiIntest < testcases/65536 |./testcases/rdiIntest|./testcases/rdiIntest>65536_copy". The command ./testcases/rdiIntest do the same thing as claimed previously and 65536 is a file while have contents more than 65536B, which has exactly 500 lines with 160 '*' in each line. In this case, I test 3 things:
+    1. the pipes, the pipes split the whole commandline into three seperate commands and run it successfully, which is indicated by three lines of "Program exited with status 0". Besides, it successfully pipe the output of one command to another's input, which is indicated by there is no output printed on the screen
+    2. It works on long input(>=65536B), I input the long input at the first command, and it pipe the content step by step finally to the file "65536_copy". The content of this file is the same as the one in testcases/65536. Therefore, it correctly works on long input.
+
+    2.
+    myShell:/home/yy225/ece551/mp_miniproject/testcases $./testcases/rdiIntest|./testcases/rdiIntest>a|./testcases/rdiIntest>b
+    (INPUT)test(Press ENTER)
+    (INPUT)(CTRL+D)
+    You will see it prints
+    Program exited with status 0
+    Program exited with status 0
+    Program exited with status 0
+
+    Then
+    myShell:/home/yy225/ece551/mp_miniproject/testcases $cat a
+    You will see it prints
+    test
+    Program exited with status 0
+
+    Then
+    myShell:/home/yy225/ece551/mp_miniproject/testcases $cat b
+
+    You will see it prints
+    Program exited with status 0
+
+    which is correct because there exists the redirection in the middle command, therefore, the middle command's std output will goto file 'a' instead of the third command. Since this command only output its input, therefore, by only inputting "test" we can only find the context in "a" and leave "b" blank.
+
+(4.2) pipe redirection arguments mix test
+    Run ./myShell
+    myShell:/home/yy225/ece551/mp_miniproject $./testcases/argvTest 1\ 2 3\ \ 4 |./testcases/rdiIntest| ./testcases/rdiIntest > mix_out
+    You will see it prints
+
+    Program exited with status 0
+    Program exited with status 0
+    Program exited with status 0
+
+    which is correct because the command is "./testcases/argvTest 1\ 2 3\ \ 4 |./testcases/rdiIntest| ./testcases/rdiIntest > mix_out". Reminder: ./testcases/argvTest is a command standard output its arguments. This command mix and match operations in ways that make sense along with having command line arguments. It will run successfully indicated by three lines of "Program exited with status 0". The first command's output is piped to the output redirection and you can find it in the file"mix_out", which has the correct output.
+    
+(4.3) extra redirection test
+      Run ./myShell
+      1.
+      myShell:/home/yy225/ece551/mp_miniproject $./testcases/rdiIntest <nosuchfile
+      You will see it prints
+      
+      myShell: nosuchfile: No such file or directory
+
+      which is correct because user input an unexisted file, nothing could be read from this nosuchfile and shell cannot read an unexisted file. Therefore it prints warning.
+      2.
+      myShell:/home/yy225/ece551/mp_miniproject/testcases $./testcases/errMsg>cout
+      You will see output
+      
+      error message
+      Program exited with status 0
+
+      myShell:/home/yy225/ece551/mp_miniproject $./testcases/errMsg 2>err
+      You will see output
+
+      cout message
+      Program exited with status 0
+
+      myShell:/home/yy225/ece551/mp_miniproject $./testcases/rdiIntest<cout <err
+      You will see output
+      
+      error message
+
+      which is correct because if we have multiple redirection of input, we should take the last input redirection fileas the input, which is "err" here.
+
+      3.
+      myShell:/home/yy225/ece551/mp_miniproject $./testcases/rdiIntest<cout err err
+      You will see output
+      
+      cout message
+
+      which is correct because we only treat the first filename after redirection character as the valid filename and ignore the rest of the strings.
+
+      4.
+      myShell:/home/yy225/ece551/mp_miniproject $./testcases/rdiIntest<cout>cout_copy
+      You will see it prints
+
+      Program exited with status 0
+      myShell:/home/yy225/ece551/mp_miniproject/testcases $cat cout_copy
+      You will see it prints
+
+      cout message
+      Program exited with status 0
+
+      which is correct because ./rdiIntest take "cout" as std input and take cout_copy as std output. ./rdiIntest only outputs its input. Since the cout_copy is exactly same as cout, therefore, it is correct.
+
+      5.
+      myShell:/home/yy225/ece551/mp_miniproject $./testcases/errMsg 2>1 2>2
+      You will see it prints
+
+      cout message
+      Program exited with status 0
+
+      myShell:/home/yy225/ece551/mp_miniproject $cat 1
+      you will see it prints
+
+      Program exited with status 0
+      
+      myShell:/home/yy225/ece551/mp_miniproject $cat 2
+      You will see it prints
+    
+      error message
+      Program exited with status 0
+      
+      which is correct because user specify several std output file, but only the last one is the valid one, therefore, although we redirection to "1" at first, we next redirct to "2", that's why we create files "1" and "2" but only "2" have contents.
+
+      6.
+      myShell:/home/yy225/ece551/mp_miniproject $./testcases/rdiIntest>cout_copy2<cout
+      You will see it prints
+      
+      Program exited with status 0
+
+      myShell:/home/yy225/ece551/mp_miniproject/testcases $cat cout_copy2
+      You will see it prints
+
+      cout message
+      Program exited with status 0
+
+      which is correct because ./rdiIntest take "cout" as std input and take cout_copy2 as std output. ./rdiIntest only outputs its input. Since the cout_copy2 is exactly same as cout, therefore, it is correct.
+
+      7.
+      myShell:/home/yy225/ece551/mp_miniproject $cat<<<README
+      You will see it prints
+
+      myShell: syntax error near unexpected token `<'
+
+      myShell:/home/yy225/ece551/mp_miniproject $cat>>README
+      You will see it prints
+
+      myShell: syntax error near unexpected token `>'
+
+      which is correct because such inputs don't specify where to input or output, which is not allowed.
+
+      8.
+      myShell:/home/yy225/ece551/mp_miniproject $./testcases/errMsg>cout2>err
+      You will see it prints
+      
+      error message
+      Program exited with status 0
+
+      myShell:/home/yy225/ece551/mp_miniproject $cat cout2
+      You will see it prints
+      
+      Program exited with status 0
+      myShell:/home/yy225/ece551/mp_miniproject $cat err
+      You will see it prints
+
+      cout message
+      Program exited with status 0
+
+      which is correct because stderr redirection should input in a special format, there must be a space before "2>". Therefore,this input is treated as two output redirection, which generate two files "cout2" and "err",but only "err" has content.
+      
+
+      9.
+      myShell:/home/yy225/ece551/mp_miniproject $./testcases/errMsg>cout 2>err
+      You will see it prints
+      
+      Program exited with status 0
+
+      myShell:/home/yy225/ece551/mp_miniproject/testcases $cat cout
+      You will see it prints
+
+      cout message
+      Program exited with status 0
+
+      myShell:/home/yy225/ece551/mp_miniproject/testcases $cat err
+      You will see it prints
+
+      error message
+      Program exited with status 0
+
+      which is correct because it output stdoutput to cout which is specified by '>', output stderr to err which is specified by "2>".
+
+(4.4)extra pipe test
+     Run ./myShell
+     1.
+     myShell:/home/yy225/ece551/mp_miniproject $||a
+     You will see it prints
+     
+     myShell: syntax error near unexpected token `|'
+
+     which is correct because user didn't input anything for pipe before the '|', it is not valid
+
+     2.
+     myShell:/home/yy225/ece551/mp_miniproject $|||
+     >a
+     You will see it prints
+     
+     myShell: syntax error near unexpected token `|'
+
+     which is correct because user didn't input anything after the last pipe sign'|', therefore, the shell will require user to input more things. But the whole pipe syntax is not valid, so the shell gave warning.
+
+     3.
+     myShell:/home/yy225/ece551/mp_miniproject $ls|a
+     You will see it prints
+     
+     Command a not found
+
+     which is correct because the pipe will detect whether every given command is executable before running the command. Since a is not found, so the shell gave warning. 
+
+
+
