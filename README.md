@@ -2,8 +2,7 @@
 ==================================
 
 This is  a simplified version of a command shell.
-I use C++ for this program, so that I can demonstrate my
-command of object orientation.
+I use C++ for this program, so that I can demonstrate object orientation programming.
 
 
 Part 1. Running command
@@ -70,14 +69,7 @@ Part 3: Pipes and redirection
     My shell is able to run one command and pipe its output to another's
     input:
       ./myProgram | ./anotherProgram
-    See the pipe() system call.
 
   Note that my shell is able to mix and match these in ways that make
   sense, along with having command line arguments:
     ./myProgram a b c < anInputFile | ./anotherProgram 23 45 > someOutputFile
-  NOTE: It is very easy to write a broken implementation of pipes which
-  LOOKS like it works on short input (< 65536 bytes) but deadlocks on longer
-  input. 
-
-  NOTE that you cannot use any code for any course work. If you use that you
-  have to be responsible for anything.
